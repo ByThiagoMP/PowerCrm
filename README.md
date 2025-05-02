@@ -79,9 +79,6 @@ DATASOURCE_URL=jdbc:mysql://mysql:3306/powercrm?useSSL=false&allowPublicKeyRetri
 DATASOURCE_USERNAME=powercrm
 DATASOURCE_PASSWORD=powercrm
 
-# Token da API FIPE 
-FIPE_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
 # MySQL
 MYSQL_DATABASE=powercrm
 MYSQL_ROOT_PASSWORD=root
