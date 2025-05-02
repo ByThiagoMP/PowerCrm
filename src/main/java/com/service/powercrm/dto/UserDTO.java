@@ -10,7 +10,9 @@ import org.hibernate.validator.constraints.br.CPF;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
-    
+
+    private Long id;
+        
     @NotBlank(message = "{user.name.required}")
     @Size(max = 200)
     private String name;

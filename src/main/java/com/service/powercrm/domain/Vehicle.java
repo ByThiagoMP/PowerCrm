@@ -60,6 +60,6 @@ public class Vehicle {
 
     @DecimalMin(value = "0.00", message = "user.advertised_price.min")
     @Digits(integer = 10, fraction = 2, message = "user.advertised_price.size")
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = true, precision = 10, scale = 2)
     private BigDecimal fipePrice;
 }
