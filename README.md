@@ -4,7 +4,7 @@
 ## Descrição do Projeto  
 O **PowerCrm** é um sistema de gerenciamento de veículos e usuários com integração à API FIPE, oferecendo funcionalidades como cadastro, consulta e atualização de dados de forma eficiente. O projeto usa uma arquitetura moderna com banco de dados relacional, cache, e mensageria com Kafka para processamento assíncrono de eventos.
 
-## 🛠 Tecnologias Utilizadas  
+## Tecnologias Utilizadas  
 - **Java 21**  
 - **Spring Boot** (Spring Web, Data JPA, Validation, Cache, Kafka, Scheduling)  
 - **Flyway** – Migrações de banco de dados  
@@ -133,7 +133,7 @@ Download da Collection: [Collection Postman - PowerCrm](https://www.postman.com/
 - Eventos de validação de veículos são processados de forma **assíncrona via Kafka**.
 
 
-## ⚠️ Observação sobre a API FIPE
+##  Observação sobre a API FIPE
 
 > Caso exceda o limite de requisições da API FIPE, será necessário fazer o cadastro em [https://fipeapi.com.br/](https://fipeapi.com.br/) e gerar um Token de Acesso.
 > Configure o token no arquivo `application.properties` e descomente a linha correspondente à configuração da API em [FipeClient.java](src/main/java/com/service/powercrm/service/integracao/FipeClient.java).
