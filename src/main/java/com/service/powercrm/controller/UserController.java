@@ -1,5 +1,6 @@
 package com.service.powercrm.controller;
 
+import com.service.powercrm.dto.UpdateStatusUserDTO;
 import com.service.powercrm.dto.UserDTO;
 import com.service.powercrm.service.UserService;
 import jakarta.validation.Valid;
@@ -55,8 +56,15 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> findByPeriod(
             @RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime start,
             @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime end) {
-         List<UserDTO> user = service.findByPeriod(start, end);
+        List<UserDTO> user = service.findByPeriod(start, end);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
+    
+    @PutMapping({"/{id}/status"})
+    public ResponseEntity<UserDTO> updateStatus(@PathVariable Long id, @RequestBody UpdateStatusUserDTO status) {
+        UserDTO user = service.updateStatus(id, status);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+        
 }

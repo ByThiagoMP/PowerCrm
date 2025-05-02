@@ -1,10 +1,11 @@
 package com.service.powercrm.service;
 
+import com.service.powercrm.domain.User;
+import com.service.powercrm.dto.UpdateStatusUserDTO;
 import com.service.powercrm.dto.UserDTO;
 import com.service.powercrm.exception.ResourceAlreadyExistsException;
 import com.service.powercrm.exception.ResourceNotFoundException;
 import com.service.powercrm.mapper.UserMapper;
-import com.service.powercrm.model.User;
 import com.service.powercrm.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +36,12 @@ public class UserService {
     }
 
     public Page<UserDTO> listAll(UserDTO filter, Pageable pageable) {
-        // 1) Cria “exemplo” de User com os campos não-nulos do filtro
         User probe = User.builder()
                 .name(filter.getName())
                 .email(filter.getEmail())
                 .status(filter.getStatus())
                 .build();
 
-        // 2) Matcher para “contém” e ignorar nulos
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
@@ -51,7 +49,6 @@ public class UserService {
 
         Example<User> example = Example.of(probe, matcher);
 
-        // 3) Busca paginada e mapeia cada User → UserDTO
         return userRepository.findAll(example, pageable)
                 .map(mapper::toDTO);
     }
@@ -65,6 +62,7 @@ public class UserService {
     }
 
     public void delete(Long id) {
+        getUserById(id);
         userRepository.deleteById(id);
     }
 
@@ -76,16 +74,15 @@ public class UserService {
 
     public List<UserDTO> findByPeriod(LocalDateTime start, LocalDateTime end) {
 
-        // 1) Valida datas
         if (start == null || end == null) {
             throw new IllegalArgumentException("As datas de início e fim são obrigatórias.");
         }
         if (start.isAfter(end)) {
             throw new IllegalArgumentException("A data de início não pode ser posterior à data de fim.");
         }
-        // 2) Busca usuários no período especificado
+
         List<User> users = userRepository.findAllByCreatedAtBetween(start, end);
-        // 3) Mapeia cada User → UserDTO
+
         return users.stream()
                 .map(mapper::toDTO)
                 .toList();
@@ -110,5 +107,12 @@ public class UserService {
         if (!errors.isEmpty()) {
             throw new ResourceAlreadyExistsException(errors);
         }
+    }
+
+    public UserDTO updateStatus(Long id, UpdateStatusUserDTO updateStatus) {
+        User user = getUserById(id);
+        user.setStatus(updateStatus.getStatus());
+        User saved = userRepository.save(user);
+        return mapper.toDTO(saved);
     }
 }
