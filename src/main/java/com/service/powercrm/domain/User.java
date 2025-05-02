@@ -1,4 +1,4 @@
-package com.service.powercrm.model;
+package com.service.powercrm.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -59,6 +60,7 @@ public class User {
     @NotBlank(message = "user.status.required")
     @Size(max = 20, message = "user.status.size")
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private String status = "Ativo";
 
     @CreationTimestamp
@@ -68,4 +70,8 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "user")
+    private List<Vehicle> vehicles;
+
 }

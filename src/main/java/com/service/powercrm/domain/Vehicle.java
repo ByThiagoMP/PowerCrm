@@ -1,4 +1,4 @@
-package com.service.powercrm.model;
+package com.service.powercrm.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -8,7 +8,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.Year;
 
 @Entity
 @Table(name = "vehicles")
@@ -27,17 +26,17 @@ public class Vehicle {
     @Column(nullable = false, length = 7)
     private String plate;
 
-    @NotNull(message = "user.advertised_price.required") // Alterado para @NotNull
+    @NotNull(message = "user.advertised_price.required")
     @DecimalMin(value = "0.00", message = "user.advertised_price.min")
     @Digits(integer = 10, fraction = 2, message = "user.advertised_price.size")
-    @Column(nullable = false, unique = true, precision = 10, scale = 2)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal advertisedPrice;
 
-    @NotNull(message = "vehicle.year.required")
-    @Min(value = 1900, message = "vehicle.year.min") // Garantir que o ano seja maior ou igual a 1900
-    @Max(value = 9999, message = "vehicle.year.max") // Garantir que o ano seja menor ou igual a 9999
-    @Column(nullable = false, name = "year") // Adiciona a coluna no banco de dados
-    private Integer year;
+    @NotBlank(message = "vehicle.year.required")
+    @Size(min = 6, max = 7, message = "vehicle.year.size")
+    @Pattern(regexp = "^[0-9]{4}-(?:[1-9]|1[0-2])$", message = "vehicle.year.format")
+    @Column(nullable = false, name = "`year`", length = 7)
+    private String year;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -47,8 +46,20 @@ public class Vehicle {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "model_id", nullable = false)
+    private Model model;
+
+    @DecimalMin(value = "0.00", message = "user.advertised_price.min")
+    @Digits(integer = 10, fraction = 2, message = "user.advertised_price.size")
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal fipePrice;
 }
