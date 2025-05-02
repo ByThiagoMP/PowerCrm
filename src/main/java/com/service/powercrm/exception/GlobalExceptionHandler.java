@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         logger.error("Erro inesperado:", ex);
         Map<String, String> error = new HashMap<>();
-        error.put("error", "Erro interno no servidor");
+        error.put("error", "Erro interno no servidor: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Map<String, String>>> handleResourceAlreadyExists(
             ResourceAlreadyExistsException ex) {
         Map<String, Map<String, String>> response = new HashMap<>();
-        response.put("errors", ex.getErrors()); // Aqui colocamos os erros no formato de 'errors' no JSON
+        response.put("errors", ex.getErrors());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 }
