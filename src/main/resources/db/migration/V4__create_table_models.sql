@@ -1,4 +1,5 @@
 CREATE TABLE models (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(200) NOT NULL
+    code BIGINT,
+    name VARCHAR(200)
 );

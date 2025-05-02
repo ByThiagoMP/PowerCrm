@@ -1,0 +1,8 @@
+CREATE TABLE fipe_sync (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    entity VARCHAR(50) NOT NULL,
+    last_sync DATETIME NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    message TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
