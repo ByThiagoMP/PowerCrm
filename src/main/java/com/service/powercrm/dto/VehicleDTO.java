@@ -1,12 +1,10 @@
 package com.service.powercrm.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.Year;
-
-import com.service.powercrm.model.User;
 
 @Data
 @NoArgsConstructor
@@ -26,11 +24,20 @@ public class VehicleDTO {
     @Digits(integer = 10, fraction = 2, message = "{vehicle.advertisedPrice.size}")
     private BigDecimal advertisedPrice;
 
-    @NotNull(message = "{vehicle.year.required}")
-    @Min(value = 1980, message = "vehicle.year.min")
-    @Max(value = 2999, message = "vehicle.year.max")
-    private Integer year;
+    @NotBlank(message = "{vehicle.year.required}")
+    @Size(min = 6, max = 7, message = "{vehicle.year.size}")
+    @Pattern(regexp = "^[0-9]{4}-(?:[1-9]|1[0-2])$", message = "{vehicle.year.format}")
+    @Column(nullable = false, name = "year", length = 7)
+    private String year;
 
     @NotNull(message = "vehicle.userId.required")
     private Long userId;
+
+    @NotNull(message = "vehicle.brandId.required")
+    private Long brandId;
+
+    @NotNull(message = "vehicle.modelId.required")
+    private Long modelId;
+    
+    private BigDecimal fipePrice;
 }

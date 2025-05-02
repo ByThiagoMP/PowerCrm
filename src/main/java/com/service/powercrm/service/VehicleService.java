@@ -1,13 +1,17 @@
 package com.service.powercrm.service;
 
+import com.service.powercrm.domain.Brand;
+import com.service.powercrm.domain.Model;
+import com.service.powercrm.domain.User;
+import com.service.powercrm.domain.Vehicle;
 import com.service.powercrm.dto.VehicleDTO;
+import com.service.powercrm.dto.VehicleValidationEvent;
 import com.service.powercrm.dto.VehicleWithUserDTO;
 import com.service.powercrm.exception.ResourceAlreadyExistsException;
 import com.service.powercrm.exception.ResourceNotFoundException;
+import com.service.powercrm.kafka.VehicleKafkaProducer;
 import com.service.powercrm.mapper.VehicleMapper;
-import com.service.powercrm.model.Vehicle;
 import com.service.powercrm.repository.VehicleRepository;
-import com.service.powercrm.model.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +23,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -29,7 +34,12 @@ public class VehicleService {
     private final VehicleRepository vehicleRepository;
     private final VehicleMapper vehicleMapper;
     private final UserService userService;
+    private final BrandService brandService;
+    private final ModelService modelService;
+    private final FipeService fipeService;
+    private final VehicleKafkaProducer vehicleKafkaProducer;
 
+    @Transactional
     @CacheEvict(value = { "vehicleCache", "vehicleListCache" }, allEntries = true)
     public VehicleDTO create(VehicleDTO dto) {
         validateVehiclesFields(dto);
@@ -37,22 +47,35 @@ public class VehicleService {
         Vehicle vehicle = vehicleMapper.toEntity(dto);
 
         User user = userService.getUserById(dto.getUserId());
+        Model model = modelService.getModelById(dto.getModelId());
+        Brand brand = brandService.getBrandById(dto.getBrandId());
 
+        fipeService.validateYearExists(dto.getYear(), brand.getCode(), model.getCode());
+
+        vehicle.setModel(model);
+        vehicle.setBrand(brand);
         vehicle.setUser(user);
+
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+        VehicleValidationEvent event = new VehicleValidationEvent(
+                savedVehicle.getId(),
+                brand.getCode(),
+                model.getCode(),
+                dto.getYear());
+        vehicleKafkaProducer.sendValidationEvent(event);
+
         return vehicleMapper.toDTO(savedVehicle);
     }
 
     @Cacheable(value = "vehicleListCache", key = "{#filter.hashCode(), #pageable.pageNumber, #pageable.pageSize}")
     public Page<VehicleWithUserDTO> listAll(VehicleDTO filter, Pageable pageable) {
-        // 1) Cria “exemplo” de Vehicle com os campos não-nulos do filtro
+
         Vehicle probe = Vehicle.builder()
                 .plate(filter.getPlate())
-                .year(filter.getYear())
                 .advertisedPrice(filter.getAdvertisedPrice())
                 .build();
 
-        // 2) Matcher para “contém” e ignorar nulos
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withIgnoreNullValues()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING)
@@ -60,18 +83,39 @@ public class VehicleService {
 
         Example<Vehicle> example = Example.of(probe, matcher);
 
-        // 3) Busca paginada e mapeia cada Vehicle → VehicleDTO
         return vehicleRepository.findAll(example, pageable)
                 .map(vehicleMapper::toVehicleWithUserDTO);
     }
 
-    @CacheEvict(value = "vehicleCache", key = "#id")
+    @Transactional
+    @CacheEvict(value = { "vehicleCache", "vehicleListCache" }, allEntries = true)
     public VehicleDTO update(Long id, VehicleDTO dto) {
+        validateVehiclesFields(dto);
+
         Vehicle vehicle = getVehicleById(id);
 
+        User user = userService.getUserById(dto.getUserId());
+        Model model = modelService.getModelById(dto.getModelId());
+        Brand brand = brandService.getBrandById(dto.getBrandId());
+
+        fipeService.validateYearExists(dto.getYear(), brand.getCode(), model.getCode());
+
+        vehicle.setModel(model);
+        vehicle.setBrand(brand);
+        vehicle.setUser(user);
+
         vehicleMapper.updateFromDto(dto, vehicle);
-        Vehicle saved = vehicleRepository.save(vehicle);
-        return vehicleMapper.toDTO(saved);
+
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+        VehicleValidationEvent event = new VehicleValidationEvent(
+                savedVehicle.getId(),
+                brand.getCode(),
+                model.getCode(),
+                dto.getYear());
+        vehicleKafkaProducer.sendValidationEvent(event);
+
+        return vehicleMapper.toDTO(savedVehicle);
     }
 
     @Cacheable(value = "vehicleCache", key = "#id")
@@ -82,6 +126,7 @@ public class VehicleService {
 
     @CacheEvict(value = "vehicleCache", key = "#id")
     public void delete(Long id) {
+        getVehicleById(id);
         vehicleRepository.deleteById(id);
     }
 

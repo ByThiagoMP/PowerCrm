@@ -1,9 +1,10 @@
 package com.service.powercrm.repository;
 
-import com.service.powercrm.model.Vehicle;
-import com.service.powercrm.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.service.powercrm.domain.User;
+import com.service.powercrm.domain.Vehicle;
 
 import java.util.List;
 

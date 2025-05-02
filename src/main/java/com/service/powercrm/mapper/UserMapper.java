@@ -1,8 +1,9 @@
 package com.service.powercrm.mapper;
 
 import org.mapstruct.*;
+
+import com.service.powercrm.domain.User;
 import com.service.powercrm.dto.UserDTO;
-import com.service.powercrm.model.User;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -11,15 +12,6 @@ public interface UserMapper {
     User toModel(UserDTO dto);
 
     UserDTO toDTO(User user);
-
-    // // Se precisar customizar após mapeamento:
-    // @AfterMapping
-    // default void normalizePhone(@MappingTarget User user) {
-    //     if (user.getPhone() != null) {
-    //         // remove tudo que não for dígito
-    //         user.setPhone(user.getPhone().replaceAll("\\D+", ""));
-    //     }
-    // }
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
